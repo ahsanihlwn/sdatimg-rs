@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use crate::blockimgdiff::{BlockImageDiff, BlockOptions, EmptyImage, Image};
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::rangelib::RangeSet;
 use crate::sparse_img::{RawImage, SparseImage, is_sparse_image};
 
@@ -76,8 +76,12 @@ fn open_image(
                         );
                     }
                     true
+                } else if len > 0 {
+                    return Err(Error::InvalidData(format!(
+                        "Input '{}' is neither an Android sparse image (magic 0xED26FF3A) nor a 4096-byte block-aligned raw image (size: {len} bytes)",
+                        path.display()
+                    )));
                 } else {
-                    // Fall through to SparseImage so it returns the standard sparse magic error.
                     false
                 }
             }

@@ -407,3 +407,23 @@ fn test_sdat2img_rejects_invalid_commands_and_ranges() {
 
     let _unused: HashMap<u32, u32> = HashMap::new();
 }
+
+#[test]
+fn test_img2sdat_rejects_unaligned_non_sparse_image() {
+    let tmp = TempDir::new("unaligned");
+    let bad_img = tmp.path().join("unaligned.img");
+    fs::write(&bad_img, b"NOT_ALIGNED_DATA_123456789").unwrap();
+
+    let err = img2sdat(
+        &bad_img,
+        &Img2SdatOptions {
+            outdir: tmp.path().to_path_buf(),
+            quiet: true,
+            ..Default::default()
+        },
+    )
+    .unwrap_err();
+
+    assert!(err.to_string().contains("neither an Android sparse image"));
+}
+
